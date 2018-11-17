@@ -49,27 +49,27 @@ class SetField(Field):
 
 
 class AggregateMeta(type):
+    SCHEMA = '_schema'
+
     def __new__(cls, name, bases, attrs):
-        import pudb; pu.db
-        # get Fields and send them to 
+        # add fields to schema
+        schema = {}
+        for base in bases:
+            if cls.SCHEMA in base.__dict__:
+                schema.update(getattr(base, cls.SCHEMA))
+        # get current cls Fields and add them to schema 
         fields = {k: v for k, v in attrs.items() if isinstance(v, Field)}
-        if not '_schema' in attrs:
-            attrs['_schema'] = {}
-        attrs['_schema'].update(fields)
-        if hasattr(bases[0], '_schema'):
-            attrs['_schema'].update(getattr(bases[0], '_schema'))
+        attrs['_schema'] = {**schema, **fields}
+        # replace fields
         for k, v in fields.items():
             attrs[k] = 666
-        if name == MODEL_BASE or bases[0].__name__ == MODEL_BASE:
-            # is from the declaration
-            return super().__new__(cls, name, bases, attrs)
-        return type(MODEL_BASE, bases, attrs)
+        # return new class
+        return super().__new__(cls, name, bases, attrs)
 
 
 class Aggregate(with_metaclass(AggregateMeta)):
     _events = {}
     _snapshot = {}
-    _schema = {}
     aggregate_id = Field(column='aggregate_id')
     sequence = Field(column='sequence')
 
