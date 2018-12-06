@@ -7,7 +7,7 @@ from eventsorcery.event import Event
 class BaseBackend(ABC):
     @staticmethod
     @abstractmethod
-    def to_event(obj: object, **kwargs) -> Event:
+    def to_event(aggregate_id: Any, obj: object, **kwargs) -> Event:
         pass
 
     @staticmethod
