@@ -1,7 +1,8 @@
-# eventsorcery
+# eventsorcery (PROTOTYPE VERSION!)
+
 Simple Event Sourcing ORM for Python
 ```
-pip install -e git+https://github.com/matiasbastos/eventsorcery.git#egg=project[sqlalchemy]
+pip install "git+https://github.com/matiasbastos/eventsorcery.git@#egg=eventsorcery[sqlalchemy]"
 ```
 
 Run basic sqlalchemy backend example:
