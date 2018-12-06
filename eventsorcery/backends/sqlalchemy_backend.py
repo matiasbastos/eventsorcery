@@ -16,11 +16,12 @@ class SQLAlchemyBackend(BaseBackend):
         self.session = session
 
     @staticmethod
-    def to_event(obj: object, **kwargs) -> Event:
-        return Event(**{k: v
-                        for k, v
-                        in obj.__dict__.items()
-                        if not k.startswith('_')})
+    def to_event(aggregate_id: Any, obj: object, **kwargs) -> Event:
+        return Event(aggregate_id, **{k: v
+                                      for k, v
+                                      in obj.__dict__.items()
+                                      if not k.startswith('_')
+                                      and k is not 'aggregate_id'})
 
     @staticmethod
     def to_object(event: Event, **kwargs)->object:
@@ -38,9 +39,11 @@ class SQLAlchemyBackend(BaseBackend):
         if not model or not isinstance(model, DeclarativeMeta):
             raise ValueError('No SQLAlchemy model provided')
         # get data
-        return [self.to_event(event)
+        return [self.to_event(aggregate_id, event)
                 for event
-                in self.session.query(model).order_by(model.sequence)]
+                in self.session.query(model)
+                               .filter(model.aggregate_id == aggregate_id)
+                               .order_by(model.sequence)]
 
     def save_event(self, event, **kwargs)->None:
         # update session object

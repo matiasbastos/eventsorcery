@@ -72,3 +72,19 @@ wallet.commit()
 wallet = WalletAggregate(1)
 assert wallet.balance == 20
 assert wallet.status == 'shit'
+
+wallet = WalletAggregate(2)
+wallet.append(WalletEvent(amount=100, status='fuck'))
+assert wallet.balance == 100
+assert wallet.status == 'fuck'
+wallet.append(WalletEvent(amount=10, status='shit'))
+assert wallet.balance == 110
+assert wallet.status == 'shit'
+wallet.commit()
+wallet = WalletAggregate(2)
+assert wallet.balance == 110
+assert wallet.status == 'shit'
+wallet.commit()
+wallet = WalletAggregate(1)
+assert wallet.balance == 20
+assert wallet.status == 'shit'

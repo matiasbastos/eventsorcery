@@ -66,7 +66,6 @@ class Aggregate(with_metaclass(AggregateMeta)):
         self._process_all_events()
 
     def _get_events(self):
-        event = Event()
         self._events = deque(self.Meta
                                  .backend
                                  .get_events(self.aggregate_id,
@@ -94,7 +93,7 @@ class Aggregate(with_metaclass(AggregateMeta)):
 
     def append(self, event: object):
         # convert object to dict
-        new_event = self.Meta.backend.to_event(event)
+        new_event = self.Meta.backend.to_event(self.aggregate_id, event)
         # get latest sequence
         latest_sequence = self._sequence_offset + len(self._events)
         # asign sequence
