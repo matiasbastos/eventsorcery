@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Any, List
 from eventsorcery.event import Event
 
+
 class BaseBackend(ABC):
     @staticmethod
     @abstractmethod
@@ -21,4 +22,3 @@ class BaseBackend(ABC):
     @abstractmethod
     def save_event(self, event, **kwargs)->None:
         pass
-

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import pudb
 # eventsorcery imports
 from eventsorcery.aggregate import Aggregate
 from eventsorcery.backends.sqlalchemy_backend import SQLAlchemyBackend
@@ -20,17 +21,17 @@ maker = sessionmaker(autocommit=False, autoflush=True, bind=engine)
 Session = scoped_session(maker)
 metadata = MetaData()
 
+
 @as_declarative()
 class Base:
     query = Session.query_property()
 
 
-##################### Usage #########################
 class WalletEvent(Base):
     __tablename__ = "wallet_event"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    aggregate_id = Column(String(length=20)) # unique together with sequence
+    aggregate_id = Column(String(length=20))  # unique together with sequence
     sequence = Column(BigInteger)
     amount = Column(BigInteger)
     status = Column(String(length=10))
@@ -45,7 +46,9 @@ class WalletSnapshot(Base):
     amount = Column(BigInteger)
     status = Column(String(length=10))
 
+
 Base.metadata.create_all(engine)
+
 
 class WalletAggregate(Aggregate):
     class Meta:
@@ -57,7 +60,7 @@ class WalletAggregate(Aggregate):
     status = SetField('status')
 
 
-import pudb; pu.db
+pu.db  # DEBUG!
 wallet = WalletAggregate(1)
 wallet.append(WalletEvent(amount=10, status='fuck'))
 assert wallet.balance == 10
@@ -65,7 +68,6 @@ assert wallet.status == 'fuck'
 wallet.append(WalletEvent(amount=10, status='shit'))
 assert wallet.balance == 20
 assert wallet.status == 'shit'
-import pudb; pu.db
 wallet.commit()
 wallet = WalletAggregate(1)
 assert wallet.balance == 20

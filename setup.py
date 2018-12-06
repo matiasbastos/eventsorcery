@@ -8,7 +8,7 @@ setup(name='eventsorcery',
       author_email='matias.bastos@gmail.com, gizmo.mac@gmail.com',
       license='MIT',
       packages=[],
-      extras_require = {
+      extras_require={
         'sqlalchemy':  ['SQLAlchemy==1.2.14', 'pudb==2018.1']
       },
       zip_safe=False)
