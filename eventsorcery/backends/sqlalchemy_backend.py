@@ -6,6 +6,8 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import UniqueConstraint, Index
 
 from eventsorcery.base_backend import BaseBackend
+from eventsorcery.event import Event
+
 
 class SQLAlchemyBackend(BaseBackend):
     session = None
@@ -14,15 +16,18 @@ class SQLAlchemyBackend(BaseBackend):
         self.session = session
 
     @staticmethod
-    def to_dict(obj: object, **kwargs)->dict:
-        return {k: v for k, v in obj.__dict__.items() if not k.startswith('_')}
+    def to_event(obj: object, **kwargs) -> Event:
+        return Event(**{k: v
+                        for k, v 
+                        in obj.__dict__.items()
+                        if not k.startswith('_')})
 
     @staticmethod
-    def to_object(event: dict, **kwargs)->object:
+    def to_object(event: Event, **kwargs)->object:
         model = kwargs.get('model')
         if not model or not isinstance(model, DeclarativeMeta):
             raise ValueError('No SQLAlchemy model provided')
-        return model(**event)
+        return model(**event._clean())
         
 
     def get_events(self, aggregate_id: Any, **kwargs)->List[dict]:
@@ -34,7 +39,7 @@ class SQLAlchemyBackend(BaseBackend):
         if not model or not isinstance(model, DeclarativeMeta):
             raise ValueError('No SQLAlchemy model provided')
         # get data
-        return [self.to_dict(event)
+        return [self.to_event(event)
 	 	for event 
 		in self.session.query(model).order_by(model.sequence)] # TODO check this order bullshit
 		

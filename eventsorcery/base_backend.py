@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 from abc import ABC, abstractmethod
 from typing import Any, List
+from eventsorcery.event import Event
 
 class BaseBackend(ABC):
     @staticmethod
     @abstractmethod
-    def to_dict(obj: object, **kwargs)->dict:
+    def to_event(obj: object, **kwargs) -> Event:
         pass
 
     @staticmethod
     @abstractmethod
-    def to_object(event: dict, **kwargs)->object:
+    def to_object(event: Event, **kwargs)->object:
         pass
 
     @abstractmethod

@@ -1,11 +1,18 @@
 # -*- coding: utf-8 -*-
 from collections import deque
 from eventsorcery.fields import BaseField, Field, SetField
+from eventsorcery.event import Event
 
 MODEL_BASE = '_metaclass_helper_'
 
 
 def with_metaclass(meta, base=object):
+    """
+    Function desc
+
+    :param param_name: short desc
+    :return: type
+    """
     return meta(MODEL_BASE, (base,), {})
 
 
@@ -57,6 +64,7 @@ class Aggregate(with_metaclass(AggregateMeta)):
         self._process_all_events()
 
     def _get_events(self):
+        event = Event()
         self._events = deque(self.Meta.backend.get_events(self.aggregate_id,
                                                           model=self.Meta.event_model))
 
@@ -72,20 +80,21 @@ class Aggregate(with_metaclass(AggregateMeta)):
             previous_value = getattr(self, field_name)
             # get new value
             new_value = field.calculate(previous_value=previous_value,
-                                        current_value=event.get(field.column))  # TODO Validate
+                                        current_value=getattr(event, field.column, None))  # TODO Validate
             # set new value
             if new_value:
                   setattr(self, field_name, new_value)
 
     def append(self, event: object):
         # convert object to dict
-        new_event = self.Meta.backend.to_dict(event)
+        new_event = self.Meta.backend.to_event(event)
         # get latest sequence
         latest_sequence = 0
         if self._events:
-            latest_sequence = self._events[-1]['sequence']
+            latest_sequence = self._events[-1].sequence
         # asign sequence order
-        new_event['sequence'] = latest_sequence + 1
+        new_event.sequence = latest_sequence + 1
+        new_event._is_dirty = True
         self._events.append(new_event)
 	# calculate aggregate fields
         self._process_event(new_event)
@@ -94,4 +103,5 @@ class Aggregate(with_metaclass(AggregateMeta)):
         # iterate events
         [self.Meta.backend.save_event(event, model=self.Meta.event_model)
          for event
-         in self._events]
+         in self._events
+         if event._is_dirty]
