@@ -37,10 +37,10 @@ class AggregateMeta(type):
 
 class Aggregate(with_metaclass(AggregateMeta)):
     Meta = type
+    _sequence_offset = 0
     _events = deque()
     _snapshot = {}
     aggregate_id = Field(column='aggregate_id')
-    sequence = SetField(column='sequence')
 
     def __init__(self, *args, **kwargs):
         # check if `Meta.backend` is set and is instance of `BaseBackend`
@@ -89,10 +89,8 @@ class Aggregate(with_metaclass(AggregateMeta)):
         # convert object to dict
         new_event = self.Meta.backend.to_event(event)
         # get latest sequence
-        latest_sequence = 0
-        if self._events:
-            latest_sequence = self._events[-1].sequence
-        # asign sequence order
+        latest_sequence = self._sequence_offset + len(self._events)
+        # asign sequence
         new_event.sequence = latest_sequence + 1
         new_event._is_dirty = True
         self._events.append(new_event)
