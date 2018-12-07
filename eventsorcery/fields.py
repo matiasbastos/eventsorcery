@@ -18,10 +18,11 @@ class Field(BaseField):
 
 
 class SumField(BaseField):
+    default_value = 0
+
     def calculate(self, previous_value: Any, current_value: Any)->Any:
-        if not previous_value:
-            previous_value = 0
-        return previous_value + current_value
+        return (previous_value or self.default_value) \
+               + (current_value or self.default_value)
 
 
 class SetField(BaseField):
