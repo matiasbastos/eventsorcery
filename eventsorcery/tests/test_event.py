@@ -18,6 +18,6 @@ def test_init_error():
 
 
 def test_clean():
-    event_dict = {'aggregate_id': True, 'sequence': 0, 'var1': 1}
+    event_dict = {'aggregate_id': True, 'sequence': 0, 'var1': 1, '_var2': 2}
     event = Event(**event_dict)
     assert event._clean() == {'aggregate_id': True, 'sequence': 0, 'var1': 1}
