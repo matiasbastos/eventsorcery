@@ -11,4 +11,8 @@ setup(name='eventsorcery',
       extras_require={
         'sqlalchemy':  ['SQLAlchemy==1.2.14', 'pudb==2018.1']
       },
+      setup_requires=['pytest-runner'],
+      tests_require=['flake8==3.5.0',
+                     'pytest==3.9.3',
+                     'pytest-sugar==0.9.1'],
       zip_safe=False)
