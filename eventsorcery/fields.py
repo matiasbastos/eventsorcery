@@ -12,11 +12,6 @@ class BaseField(ABC):
         pass
 
 
-class Field(BaseField):
-    def calculate(self, previous_value: Any, current_value: Any)->Any:
-        return None
-
-
 class SumField(BaseField):
     default_value = 0
 

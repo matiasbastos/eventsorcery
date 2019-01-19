@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from collections import deque
-from eventsorcery.fields import BaseField, Field, SetField
+from eventsorcery.fields import BaseField, SetField
 from eventsorcery.event import Event
 
 MODEL_BASE = '_metaclass_helper_'
