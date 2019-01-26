@@ -65,20 +65,11 @@ def test_get_latest_snapshot():
     model_event = TestEvent(aggregate_id=1, sequence=2, field1=3, field2='4')
     session_mock = MagicMock()
 
-    def query(x):
-        first = MagicMock()
-        first.side_effect = lambda x: model_event
-        order = MagicMock()
-        order.side_effect = lambda x: first
-        filter_ = MagicMock()
-        filter_.side_effect = lambda x: order
-        return filter_
+    session_mock.query().filter().order_by().first.return_value = model_event
 
-    session_mock.query.side_effect = query
     be = SQLAlchemyBackend(session_mock)
     with pytest.raises(ValueError):
         events = be.get_latest_snapshot(1)
-    import pudb; pu.db
     event = be.get_latest_snapshot(1, model=TestEvent)
     assert isinstance(event, Event)
 
