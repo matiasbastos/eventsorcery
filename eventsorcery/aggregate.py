@@ -106,7 +106,7 @@ class Aggregate(with_metaclass(AggregateMeta)):
 
     def append(self, event: object):
         event.aggregate_id = self.aggregate_id
-        # convert object to dict
+        # convert object to event object
         new_event = self.Meta.backend.to_event(event)
         # get latest sequence
         latest_sequence = self._sequence_offset + len(self._events)
