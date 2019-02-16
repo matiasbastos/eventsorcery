@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import pudb
 # eventsorcery imports
 from eventsorcery.aggregate import Aggregate
 from eventsorcery.backends.sqlalchemy_backend import SQLAlchemyBackend
@@ -12,7 +11,6 @@ from sqlalchemy.orm import scoped_session
 from sqlalchemy.schema import MetaData
 from sqlalchemy.schema import Column
 from sqlalchemy.types import String, Integer, BigInteger
-
 
 # sqlalchemy setup
 engine = create_engine('sqlite://')
@@ -59,8 +57,6 @@ class WalletAggregate(Aggregate):
     balance = SumField('amount')
     status = SetField('status')
 
-
-pu.db  # DEBUG!
 
 wallet = WalletAggregate(1)
 wallet.append(WalletEvent(amount=10, status='fuck'))

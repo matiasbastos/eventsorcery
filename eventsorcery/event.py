@@ -11,7 +11,7 @@ class Event(object):
 
     def __init__(self, **kwargs):
         """
-        Init event using kwargs to create properies.
+        Init event using kwargs to create properties.
 
         :param kwargs: dict containing event values.
         """

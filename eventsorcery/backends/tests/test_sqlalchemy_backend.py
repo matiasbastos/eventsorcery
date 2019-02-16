@@ -7,7 +7,6 @@ from sqlalchemy.types import String, Integer, BigInteger
 from eventsorcery.backends.sqlalchemy_backend import SQLAlchemyBackend
 from eventsorcery.event import Event
 
-
 Base = declarative_base()
 
 
@@ -21,14 +20,14 @@ class TestEvent(Base):
 
 
 def test_to_event():
-    model_event = TestEvent(aggregate_id=1, sequence=2, field1=3, field2='4')
+    model_event = TestEvent(aggregate_id='1', sequence=2, field1=3, field2='4')
     event = SQLAlchemyBackend.to_event(model_event)
     assert isinstance(event, Event)
     assert hasattr(event, 'aggregate_id')
     assert hasattr(event, 'sequence')
     assert hasattr(event, 'field1')
     assert hasattr(event, 'field2')
-    assert getattr(event, 'aggregate_id') == 1
+    assert getattr(event, 'aggregate_id') == '1'
     assert getattr(event, 'sequence') == 2
     assert getattr(event, 'field1') == 3
     assert getattr(event, 'field2') == '4'
@@ -42,7 +41,7 @@ def test_to_object():
     event = Event(**event_dict)
 
     with pytest.raises(ValueError):
-        event_model = SQLAlchemyBackend.to_object(event)
+        _ = SQLAlchemyBackend.to_object(event)
 
     event_model = SQLAlchemyBackend.to_object(event, model=TestEvent)
     assert isinstance(event_model, TestEvent)
@@ -56,20 +55,20 @@ def test_get_events():
     session_mock.query.filter.order_by.__iter__.return_value = []
     be = SQLAlchemyBackend(session_mock)
     with pytest.raises(ValueError):
-        events = be.get_events(1, 1)
+        _ = be.get_events(1, 1)
     events = be.get_events(1, 1, model=TestEvent)
     assert events == []
 
 
 def test_get_latest_snapshot():
-    model_event = TestEvent(aggregate_id=1, sequence=2, field1=3, field2='4')
+    model_event = TestEvent(aggregate_id='1', sequence=2, field1=3, field2='4')
     session_mock = MagicMock()
 
     session_mock.query().filter().order_by().first.return_value = model_event
 
     be = SQLAlchemyBackend(session_mock)
     with pytest.raises(ValueError):
-        events = be.get_latest_snapshot(1)
+        _ = be.get_latest_snapshot(1)
     event = be.get_latest_snapshot(1, model=TestEvent)
     assert isinstance(event, Event)
 

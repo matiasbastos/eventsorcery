@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from typing import Any, List, Optional
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy import UniqueConstraint, Index
+from sqlalchemy.orm.scoping import ScopedSession
+# from sqlalchemy.exc import IntegrityError
+# from sqlalchemy.orm.exc import NoResultFound
+# from sqlalchemy import UniqueConstraint, Index
 
 from eventsorcery.base_backend import BaseBackend
 from eventsorcery.event import Event
@@ -12,7 +13,7 @@ from eventsorcery.event import Event
 class SQLAlchemyBackend(BaseBackend):
     session = None
 
-    def __init__(self, session: None):
+    def __init__(self, session: ScopedSession):
         self.session = session
 
     @staticmethod
@@ -23,7 +24,7 @@ class SQLAlchemyBackend(BaseBackend):
                         if not k.startswith('_')})
 
     @staticmethod
-    def to_object(event: Event, **kwargs)->object:
+    def to_object(event: Event, **kwargs) -> object:
         model = kwargs.get('model')
         if not model or not isinstance(model, DeclarativeMeta):
             raise ValueError('No SQLAlchemy model provided')
@@ -32,7 +33,7 @@ class SQLAlchemyBackend(BaseBackend):
     def get_events(self,
                    aggregate_id: Any,
                    sequence: Any = 0,
-                   **kwargs)->List[dict]:
+                   **kwargs) -> List[dict]:
         # update session object
         if 'session' in kwargs:
             self.session = kwargs['session']
@@ -43,18 +44,18 @@ class SQLAlchemyBackend(BaseBackend):
         # get data
         if sequence:
             query = self.session.query(model) \
-                                .filter(model.aggregate_id == aggregate_id,
-                                        model.sequence > sequence) \
-                                .order_by(model.sequence)
+                .filter(model.aggregate_id == aggregate_id,
+                        model.sequence > sequence) \
+                .order_by(model.sequence)
         else:
             query = self.session.query(model) \
-                                .filter(model.aggregate_id == aggregate_id) \
-                                .order_by(model.sequence)
+                .filter(model.aggregate_id == aggregate_id) \
+                .order_by(model.sequence)
         return [self.to_event(event) for event in query]
 
     def get_latest_snapshot(self,
                             aggregate_id: Any,
-                            **kwargs)->Optional[Event]:
+                            **kwargs) -> Optional[Event]:
         # update session object
         if 'session' in kwargs:
             self.session = kwargs['session']
@@ -63,15 +64,14 @@ class SQLAlchemyBackend(BaseBackend):
         if not model or not isinstance(model, DeclarativeMeta):
             raise ValueError('No SQLAlchemy model provided')
         # get data
-        snapshot = self.session.query(model) \
-                               .filter(model.aggregate_id == aggregate_id) \
-                               .order_by(model.sequence.desc()) \
-                               .first()
+        snapshot = self.session.query(model).filter(model.aggregate_id == aggregate_id) \
+            .order_by(model.sequence.desc()) \
+            .first()
         if not snapshot:
             return None
         return self.to_event(snapshot)
 
-    def save_event(self, event, **kwargs)->None:
+    def save_event(self, event, **kwargs) -> None:
         # update session object
         if 'session' in kwargs:
             self.session = kwargs['session']
@@ -83,7 +83,7 @@ class SQLAlchemyBackend(BaseBackend):
         self.session.add(event_row)
         self.session.commit()
 
-    def save_snapshot(self, event, **kwargs)->None:
+    def save_snapshot(self, event, **kwargs) -> None:
         # update session object
         if 'session' in kwargs:
             self.session = kwargs['session']

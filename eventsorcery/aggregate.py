@@ -2,29 +2,24 @@
 from collections import deque
 from eventsorcery.fields import BaseField, SetField
 from eventsorcery.event import Event
+from eventsorcery.base_backend import BaseBackend
 
 MODEL_BASE = '_metaclass_helper_'
 
 
 def with_metaclass(meta, base=object):
-    """
-    Function desc
-
-    :param param_name: short desc
-    :return: type
-    """
     return meta(MODEL_BASE, (base,), {})
 
 
 class AggregateMeta(type):
     SCHEMA = '_schema'
 
-    def __new__(cls, name, bases, attrs):
+    def __new__(self, name, bases, attrs):
         # add fields to schema
         schema = {}
         for base in bases:
-            if cls.SCHEMA in base.__dict__:
-                schema.update(getattr(base, cls.SCHEMA))
+            if self.SCHEMA in base.__dict__:
+                schema.update(getattr(base, self.SCHEMA))
         # get current cls Fields and add them to schema
         fields = {k: v for k, v in attrs.items() if isinstance(v, BaseField)}
         attrs['_schema'] = {**schema, **fields}
@@ -32,7 +27,7 @@ class AggregateMeta(type):
         for k, v in fields.items():
             attrs[k] = None
         # return new class
-        return super().__new__(cls, name, bases, attrs)
+        return super().__new__(self, name, bases, attrs)
 
 
 class Aggregate(with_metaclass(AggregateMeta)):
@@ -67,9 +62,9 @@ class Aggregate(with_metaclass(AggregateMeta)):
 
     def _get_events(self):
         snapshot = self.Meta \
-                       .backend \
-                       .get_latest_snapshot(self.aggregate_id,
-                                            model=self.Meta.snapshot_model)
+            .backend \
+            .get_latest_snapshot(self.aggregate_id,
+                                 model=self.Meta.snapshot_model)
         if snapshot:
             self._snapshot = snapshot
             self._sequence_offset = snapshot.sequence
@@ -77,10 +72,10 @@ class Aggregate(with_metaclass(AggregateMeta)):
             self._process_event(snapshot, is_snapshot=True)
 
         self._events = deque(self.Meta
-                                 .backend
-                                 .get_events(self.aggregate_id,
-                                             model=self.Meta.event_model,
-                                             sequence=self._sequence_offset))
+                             .backend
+                             .get_events(self.aggregate_id,
+                                         model=self.Meta.event_model,
+                                         sequence=self._sequence_offset))
 
     def _process_all_events(self):
         # iterate data
