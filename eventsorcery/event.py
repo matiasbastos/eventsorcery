@@ -7,7 +7,7 @@ class Event(object):
     """
     aggregate_id = None  # aggregate_id
     sequence = 0  # incremental sequence number
-    _is_dirty = False  # used to mark the event to be persisted
+    is_dirty = False  # used to mark the event to be persisted
 
     def __init__(self, **kwargs):
         """

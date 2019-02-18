@@ -14,12 +14,12 @@ def with_metaclass(meta, base=object):
 class AggregateMeta(type):
     SCHEMA = '_schema'
 
-    def __new__(self, name, bases, attrs):
+    def __new__(mcs, name, bases, attrs):
         # add fields to schema
         schema = {}
         for base in bases:
-            if self.SCHEMA in base.__dict__:
-                schema.update(getattr(base, self.SCHEMA))
+            if mcs.SCHEMA in base.__dict__:
+                schema.update(getattr(base, mcs.SCHEMA))
         # get current cls Fields and add them to schema
         fields = {k: v for k, v in attrs.items() if isinstance(v, BaseField)}
         attrs['_schema'] = {**schema, **fields}
@@ -27,11 +27,15 @@ class AggregateMeta(type):
         for k, v in fields.items():
             attrs[k] = None
         # return new class
-        return super().__new__(self, name, bases, attrs)
+        return super().__new__(mcs, name, bases, attrs)
 
 
 class Aggregate(with_metaclass(AggregateMeta)):
-    Meta = type  # meta class for the aggregate setup
+    class Meta:  # meta class for the aggregate setup
+        backend = None
+        snapshot_model = None
+        event_model = None
+
     _sequence_offset = 0  # used to mark the sequence offset
     _events = deque()  # current list of events in the aggregate
     _snapshot = {}  # holds the latest snapshot
@@ -107,7 +111,7 @@ class Aggregate(with_metaclass(AggregateMeta)):
         latest_sequence = self._sequence_offset + len(self._events)
         # asign sequence
         new_event.sequence = latest_sequence + 1
-        new_event._is_dirty = True
+        new_event.is_dirty = True
         self._events.append(new_event)
         # calculate aggregate fields
         self._process_event(new_event)
@@ -117,7 +121,7 @@ class Aggregate(with_metaclass(AggregateMeta)):
         [self.Meta.backend.save_event(event, model=self.Meta.event_model)
          for event
          in self._events
-         if event._is_dirty]
+         if event.is_dirty]
 
     def create_snapshot(self):
         fields = {}
