@@ -111,7 +111,7 @@ class Aggregate(with_metaclass(AggregateMeta)):
         latest_sequence = self._sequence_offset + len(self._events)
         # asign sequence
         new_event.sequence = latest_sequence + 1
-        new_event.is_dirty = True
+        new_event._is_dirty = True
         self._events.append(new_event)
         # calculate aggregate fields
         self._process_event(new_event)
@@ -121,7 +121,7 @@ class Aggregate(with_metaclass(AggregateMeta)):
         [self.Meta.backend.save_event(event, model=self.Meta.event_model)
          for event
          in self._events
-         if event.is_dirty]
+         if event._is_dirty]
 
     def create_snapshot(self):
         fields = {}
