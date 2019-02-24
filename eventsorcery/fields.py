@@ -8,22 +8,18 @@ class BaseField(ABC):
         self.column = column
 
     @abstractmethod
-    def calculate(self, event: Any)->Any:
+    def calculate(self, previous_value: Any, current_value: Any) -> Any:
         pass
 
 
-class Field(BaseField):
-    def calculate(self, previous_value: Any, current_value: Any)->Any:
-        return None
-
-
 class SumField(BaseField):
-    def calculate(self, previous_value: Any, current_value: Any)->Any:
-        if not previous_value:
-            previous_value = 0
-        return previous_value + current_value
+    default_value = 0
+
+    def calculate(self, previous_value: Any, current_value: Any) -> Any:
+        return (previous_value or self.default_value) \
+               + (current_value or self.default_value)
 
 
 class SetField(BaseField):
-    def calculate(self, previous_value: Any, current_value: Any)->Any:
+    def calculate(self, previous_value: Any, current_value: Any) -> Any:
         return current_value

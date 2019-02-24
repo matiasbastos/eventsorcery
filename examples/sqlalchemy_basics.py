@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import pudb
 # eventsorcery imports
 from eventsorcery.aggregate import Aggregate
 from eventsorcery.backends.sqlalchemy_backend import SQLAlchemyBackend
@@ -12,7 +11,6 @@ from sqlalchemy.orm import scoped_session
 from sqlalchemy.schema import MetaData
 from sqlalchemy.schema import Column
 from sqlalchemy.types import String, Integer, BigInteger
-
 
 # sqlalchemy setup
 engine = create_engine('sqlite://')
@@ -43,7 +41,7 @@ class WalletSnapshot(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     aggregate_id = Column(String(length=20))
     sequence = Column(BigInteger)
-    amount = Column(BigInteger)
+    balance = Column(BigInteger)
     status = Column(String(length=10))
 
 
@@ -60,7 +58,6 @@ class WalletAggregate(Aggregate):
     status = SetField('status')
 
 
-pu.db  # DEBUG!
 wallet = WalletAggregate(1)
 wallet.append(WalletEvent(amount=10, status='fuck'))
 assert wallet.balance == 10
@@ -69,6 +66,9 @@ wallet.append(WalletEvent(amount=10, status='shit'))
 assert wallet.balance == 20
 assert wallet.status == 'shit'
 wallet.commit()
+
+wallet.create_snapshot()
+
 wallet = WalletAggregate(1)
 assert wallet.balance == 20
 assert wallet.status == 'shit'
@@ -81,10 +81,11 @@ wallet.append(WalletEvent(amount=10, status='shit'))
 assert wallet.balance == 110
 assert wallet.status == 'shit'
 wallet.commit()
+
 wallet = WalletAggregate(2)
 assert wallet.balance == 110
 assert wallet.status == 'shit'
-wallet.commit()
+
 wallet = WalletAggregate(1)
 assert wallet.balance == 20
 assert wallet.status == 'shit'
