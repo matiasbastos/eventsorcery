@@ -12,26 +12,26 @@ class BaseBackend(ABC):
 
     @staticmethod
     @abstractmethod
-    def to_object(event: Event, **kwargs)->object:
+    def to_object(event: Event, **kwargs) -> object:
         pass
 
     @abstractmethod
     def get_events(self,
                    aggregate_id: Any,
                    sequence: Any = 0,
-                   **kwargs)->List[dict]:
+                   **kwargs) -> List[dict]:
         pass
 
     @abstractmethod
     def get_latest_snapshot(self,
                             aggregate_id: Any,
-                            **kwargs)->Optional[Event]:
+                            **kwargs) -> Optional[Event]:
         pass
 
     @abstractmethod
-    def save_event(self, event, **kwargs)->None:
+    def save_event(self, event, **kwargs) -> None:
         pass
 
     @abstractmethod
-    def save_snapshot(self, event, **kwargs)->None:
+    def save_snapshot(self, event, **kwargs) -> None:
         pass
